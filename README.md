@@ -1,5 +1,7 @@
 # AI DataTalks-By Kumar Sundram
 
+[Live Demo](https://ai-data-talk.vercel.app/)
+
 ## Overview
 
 DataTalks is an AI-powered data analysis tool that allows users to upload CSV files and have natural language conversations with their data. It solves the problem of making data analysis accessible to non-technical users by providing instant, clear answers to questions about datasets without requiring complex queries or programming knowledge. The intended users are business analysts, researchers, students, and anyone who needs to quickly understand patterns, trends, and insights from their data.
