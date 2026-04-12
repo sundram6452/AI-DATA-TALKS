@@ -6,6 +6,12 @@
 
 DataTalks is an AI-powered data analysis tool that allows users to upload CSV files and have natural language conversations with their data. It solves the problem of making data analysis accessible to non-technical users by providing instant, clear answers to questions about datasets without requiring complex queries or programming knowledge. The intended users are business analysts, researchers, students, and anyone who needs to quickly understand patterns, trends, and insights from their data.
 
+## Download Sample Dataset
+
+Click the link below to download the sample CSV dataset:
+
+- [Download `ai_sales_dataset_10000_rows.csv`](./datasets/ai_sales_dataset_10000_rows.csv)
+
 ## Features
 
 - **CSV File Upload**: Drag and drop or click to upload CSV files for analysis

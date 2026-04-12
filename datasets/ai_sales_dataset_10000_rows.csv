@@ -1,0 +1,6 @@
+OrderID,Date,Region,Product,Quantity,UnitPrice,Revenue,Profit,CustomerSegment,SalesChannel
+1001,2024-01-02,North,AI Speaker,5,199.99,999.95,249.99,Small Business,Online
+1002,2024-01-02,South,AI Headset,3,129.99,389.97,97.49,Consumer,Retail
+1003,2024-01-03,East,AI Camera,2,249.99,499.98,124.99,Enterprise,Online
+1004,2024-01-04,West,AI Sensor,7,79.99,559.93,139.98,SMB,Direct
+1005,2024-01-05,North,AI Assistant,1,499.99,499.99,124.99,Government,Online
