@@ -8,6 +8,11 @@ export interface ParsedData {
   summary: string;
 }
 
+export interface SuggestionCategory {
+  label: string;
+  questions: string[];
+}
+
 export function parseCSV(file: File): Promise<ParsedData> {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
@@ -75,4 +80,90 @@ export function dataToContext(data: ParsedData): string {
   }
 
   return ctx;
+}
+
+// Detect column types
+function detectColumnTypes(headers: string[], rows: Record<string, string>[]): Record<string, "numeric" | "categorical" | "date"> {
+  const types: Record<string, "numeric" | "categorical" | "date"> = {};
+
+  for (const col of headers) {
+    const values = rows.map((r) => r[col]).filter(Boolean);
+    const nums = values.map(Number).filter((n) => !isNaN(n));
+
+    // Check if mostly numeric
+    if (nums.length > values.length * 0.7 && nums.length > 0) {
+      types[col] = "numeric";
+    } else {
+      // Check if date-like
+      const datePattern = /^\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4}|\w+\s\d+,\s\d{4}/;
+      const isDate = values.some((v) => datePattern.test(v));
+      types[col] = isDate ? "date" : "categorical";
+    }
+  }
+
+  return types;
+}
+
+// Generate context-aware suggestions based on data
+export function generateSuggestions(data: ParsedData): SuggestionCategory[] {
+  const { headers, rows } = data;
+  const types = detectColumnTypes(headers, rows);
+
+  const numericCols = headers.filter((h) => types[h] === "numeric");
+  const categoricalCols = headers.filter((h) => types[h] === "categorical");
+  const dateCols = headers.filter((h) => types[h] === "date");
+
+  const suggestions: SuggestionCategory[] = [];
+
+  // Numeric analysis suggestions
+  if (numericCols.length > 0) {
+    const q1 = `What is the average and total of ${numericCols[0]}?`;
+    const q2 = `Show me the highest and lowest values in ${numericCols[0]}?`;
+    suggestions.push({
+      label: "Analysis",
+      questions: [q1, q2],
+    });
+  }
+
+  // Categorical breakdown suggestions
+  if (categoricalCols.length > 0) {
+    const q1 = `Break down the data by ${categoricalCols[0]}`;
+    const q2 = `What are the top categories in ${categoricalCols[0]}?`;
+    suggestions.push({
+      label: "Breakdown",
+      questions: [q1, q2],
+    });
+  }
+
+  // Time-based suggestions
+  if (dateCols.length > 0) {
+    const timeCol = dateCols[0];
+    const q1 = `Show me the trend over ${timeCol}`;
+    const q2 = `What changed between the earliest and latest ${timeCol}?`;
+    suggestions.push({
+      label: "Trends",
+      questions: [q1, q2],
+    });
+  }
+
+  // Comparison suggestions
+  if (numericCols.length > 1 && categoricalCols.length > 0) {
+    const q1 = `Compare ${numericCols[0]} across different ${categoricalCols[0]}`;
+    const q2 = `Which ${categoricalCols[0]} has the highest ${numericCols[0]}?`;
+    suggestions.push({
+      label: "Compare",
+      questions: [q1, q2],
+    });
+  }
+
+  // Summary suggestions
+  suggestions.push({
+    label: "Summary",
+    questions: [
+      `Give me a summary of the key insights`,
+      `What are the most important findings in this dataset?`,
+    ],
+  });
+
+  return suggestions;
 }

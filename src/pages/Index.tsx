@@ -5,7 +5,7 @@ import { DataPreview } from "@/components/DataPreview";
 import { ChatMessage, Message } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { SuggestedQuestions } from "@/components/SuggestedQuestions";
-import { parseCSV, ParsedData, dataToContext } from "@/lib/csv-parser";
+import { parseCSV, ParsedData, dataToContext, generateSuggestions, SuggestionCategory } from "@/lib/csv-parser";
 import { Sparkles, Database } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,6 +18,7 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestionCategory[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,6 +33,11 @@ const Index = () => {
       setFileName(file.name);
       setShowPreview(true);
       setMessages([]);
+
+      // Generate context-aware suggestions based on the data
+      const contextSuggestions = generateSuggestions(parsed);
+      setSuggestions(contextSuggestions);
+
       toast.success(`Loaded ${parsed.rowCount} rows from ${file.name}`);
     } catch {
       toast.error("Failed to parse CSV file");
@@ -45,6 +51,7 @@ const Index = () => {
     setFileName("");
     setMessages([]);
     setShowPreview(false);
+    setSuggestions([]);
   }, []);
 
   const handleSend = useCallback(async (input: string) => {
@@ -219,10 +226,10 @@ const Index = () => {
               )}
             </AnimatePresence>
 
-            {/* Chat messages */}
-            <div className="flex-1 space-y-4 min-h-0">
+            {/* Chat messages container */}
+            <div className="flex-1 flex flex-col gap-6 min-h-0 overflow-y-auto px-2 py-4">
               {!hasMessages && (
-                <SuggestedQuestions onSelect={handleSend} />
+                <SuggestedQuestions onSelect={handleSend} suggestions={suggestions} />
               )}
               {messages.map((m, i) => (
                 <ChatMessage
@@ -234,17 +241,19 @@ const Index = () => {
               <div ref={chatEndRef} />
             </div>
 
-            {/* Input */}
-            <div className="sticky bottom-0 bg-background pb-4 pt-2">
-              <ChatInput
-                onSend={handleSend}
-                isLoading={isStreaming}
-                suggestions={
-                  hasMessages
-                    ? ["Show a breakdown", "What changed the most?", "Summarize key insights"]
-                    : undefined
-                }
-              />
+            {/* Input container */}
+            <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-background/80 pb-6 pt-4 w-full">
+              <div className="mx-auto px-2">
+                <ChatInput
+                  onSend={handleSend}
+                  isLoading={isStreaming}
+                  suggestions={
+                    hasMessages
+                      ? ["Show a breakdown", "What changed the most?", "Summarize key insights"]
+                      : undefined
+                  }
+                />
+              </div>
             </div>
           </>
         )}
